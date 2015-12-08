@@ -1,5 +1,6 @@
 package application;
 
+import control.firstClickCommand;
 import control.CellCommand;
 import control.PressCellCommand;
 import control.PutAFlagCommand;
@@ -23,13 +24,17 @@ import view.CellSet;
 import view.GameBoardDisplay;
 
 public class SwingGameBoardDisplay extends JFrame implements GameBoardDisplay{
-    private final CellSet set;
-    private MinePanel[][] panels;
-    private Map<String, CellCommand> commands = new HashMap();
+    private CellSet set;
+    private boolean firtClick = true;
+    private CellPanel[][] panels;
+    private final Map<String, CellCommand> commands = new HashMap();
+    private final int rows, columns, mines;
+    private int correctMines;
 
-
-    public SwingGameBoardDisplay(CellSet set) {
-        this.set = set;
+    public SwingGameBoardDisplay(int rows, int columns, int mines) {
+        this.rows = rows;
+        this.columns = columns;
+        this.mines = mines;
         this.deployCommands();
         this.deployUI();
     }
@@ -56,8 +61,17 @@ public class SwingGameBoardDisplay extends JFrame implements GameBoardDisplay{
     @Override
     public void flag(int row, int column) {
         Cell cell = set.getCell(row, column);
-        if(cell instanceof FlagCell) panels[row][column].paintOf(11);
-        if(cell instanceof UnpulsatedCell || cell instanceof MineCell) panels[row][column].paintOf(10);
+        if(cell instanceof FlagCell){
+            panels[row][column].paintOf(11);
+            if(cell.getClosedMines()==-1){
+                correctMines++;
+                if(correctMines == mines) win();
+            }
+        }
+        if(cell instanceof UnpulsatedCell || cell instanceof MineCell) {
+            panels[row][column].paintOf(10);
+            if (cell.getClosedMines()==-1) correctMines--;
+        }
     }
     
     private void lose() {
@@ -71,6 +85,8 @@ public class SwingGameBoardDisplay extends JFrame implements GameBoardDisplay{
     private void deployCommands() {
         commands.put("press", new PressCellCommand(this));
         commands.put("flag", new PutAFlagCommand(this));
+        commands.put("firstClick", new firstClickCommand(this));
+        
     }
     
     private void deployUI() {
@@ -80,19 +96,18 @@ public class SwingGameBoardDisplay extends JFrame implements GameBoardDisplay{
     }
 
     private JPanel gameBoard() {
-        JPanel panel = new JPanel(new GridLayout(set.getRows(), set.getColums()));
+        JPanel panel = new JPanel(new GridLayout(rows, columns));
         fillPanel(panel);
         return panel;
     }
 
     private void fillPanel(JPanel panel) {
         Image[] images = loadImages();
-        panels = new MinePanel[set.getRows()][set.getColums()];
+        panels = new CellPanel[rows][columns];
         
-        Cell[][] cells = set.getCells();
-        for (int i = 0; i < cells.length; i++) {
-            for (int j = 0; j < cells[i].length; j++) {
-                MinePanel temporalPanel = new MinePanel(images);
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                CellPanel temporalPanel = new CellPanel(images);
                 temporalPanel.addMouseListener(mouseListener(i,j));
                 panel.add(temporalPanel);
                 panels[i][j]=temporalPanel;
@@ -110,7 +125,7 @@ public class SwingGameBoardDisplay extends JFrame implements GameBoardDisplay{
     }
 
     private void setColocation() {
-        this.setSize(new Dimension(set.getColums()*33, set.getRows()*36));
+        this.setSize(new Dimension(columns*33, rows*36));
         this.setResizable(false);
         this.setLocationRelativeTo(null);
     }
@@ -128,10 +143,18 @@ public class SwingGameBoardDisplay extends JFrame implements GameBoardDisplay{
             @Override
             public void mouseReleased(MouseEvent e) {
                 int buttonPressed = e.getButton();
-                if(buttonPressed==MouseEvent.BUTTON1){
-                    commands.get("press").exectute(row, column);
-                }else if(buttonPressed==MouseEvent.BUTTON3){
-                    commands.get("flag").exectute(row, column);
+                if(!firtClick){
+                    if(buttonPressed==MouseEvent.BUTTON1){
+                        commands.get("press").exectute(row, column);
+                    }else if(buttonPressed==MouseEvent.BUTTON3){
+                        commands.get("flag").exectute(row, column);
+                    }
+                }else {
+                    if(buttonPressed==MouseEvent.BUTTON1){
+                        commands.get("firstClick").exectute(row, column);
+                        firtClick = false;
+                        commands.get("press").exectute(row, column);
+                    }
                 }
             }
 
@@ -145,5 +168,31 @@ public class SwingGameBoardDisplay extends JFrame implements GameBoardDisplay{
         };
     }
 
+    @Override
+    public int getRows() {
+        return rows;
+    }
+
+    @Override
+    public int getColumns() {
+        return columns;
+    }
+
+    @Override
+    public int getMines() {
+        return mines;
+    }
     
+    @Override
+    public void setCellSet(CellSet cellSet) {
+        this.set = cellSet;
+    }
+
+    private void win() {
+        int answer = JOptionPane.showConfirmDialog(this,"¡GANASTE!\n ¿Otra?", "Ganaste", JOptionPane.YES_NO_OPTION);
+        if(answer==0){
+            this.dispose();
+            new Application();
+        }
+    }
 }   

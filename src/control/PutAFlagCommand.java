@@ -18,7 +18,6 @@ public class PutAFlagCommand implements CellCommand {
     
     @Override
     public void exectute(int row, int column) {
-        System.out.println("ejecutado en " + row + " " + column);
         CellSet set = display.getCellSet();
         Cell oldCell = set.getCell(row, column);
         if(oldCell != null){

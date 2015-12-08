@@ -1,6 +1,5 @@
 package application;
 
-import control.StartCommand;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -13,7 +12,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import view.CellSet;
 
 class Application extends JFrame{
     private Map<String, JTextField> fields = new HashMap<>();
@@ -64,8 +62,7 @@ class Application extends JFrame{
                 int column = toNumber("columnas");
                 int mine = toNumber("minas");
                 if(checkAreValid(row, column, mine)) {
-                    CellSet set = new StartCommand(row, column, mine).execute();
-                    new SwingGameBoardDisplay(set).execute();
+                    new SwingGameBoardDisplay(row,column,mine).execute();
                     Application.this.setVisible(false);
                 }
             }
@@ -88,7 +85,7 @@ class Application extends JFrame{
                     showErrorMessage("columnas");
                     return false;
                 }
-                if(mine>(row*column)) {
+                if(mine>=(row*column)) {
                     showErrorMessage("minas");
                     return false;
                 }
@@ -108,7 +105,7 @@ class Application extends JFrame{
         jPanel.add(panelWithTagAndField("filas"));
         jPanel.add(panelWithTagAndField("columnas"));
         jPanel.add(panelWithTagAndField("minas"));
-        jPanel.add(new JLabel("El numero de minas ha de ser menos que el de casillas"), BorderLayout.SOUTH);
+        jPanel.add(new JLabel("El numero de minas ha de ser menor que el de casillas"), BorderLayout.SOUTH);
         return jPanel;
     }
     

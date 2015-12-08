@@ -4,36 +4,41 @@ import model.Cell;
 import model.MineCell;
 import model.UnpulsatedCell;
 import view.CellSet;
+import view.GameBoardDisplay;
 
-public class StartCommand {
-    private final int rows,column,mines;
-    private Cell[][] cells;
+public class firstClickCommand implements CellCommand {
+    private final GameBoardDisplay display;
+    private final Cell[][] cells;
+    private int rowPulsated, columnPulsated;
 
-    public StartCommand(int rows, int column, int mines) {
-        this.rows = rows;
-        this.column = column;
-        this.mines = mines;
+    public firstClickCommand(GameBoardDisplay display) {
+        this.display = display;
+        cells = new Cell[display.getRows()][display.getColumns()];
     }
-    
-    public CellSet execute(){
-        cells = new Cell[rows][column];
+
+    @Override
+    public void exectute(int row, int column) {
+        this.rowPulsated = row;
+        this.columnPulsated = column;
         putMines();
         fill();
-        return new CellSet(cells);
+        display.setCellSet (new CellSet(cells));
     }
-
+    
     private void putMines() {
-        int minesLeft = mines;
+        int rows = display.getRows();
+        int column = display.getColumns();
+        int minesLeft = display.getMines();
         while (minesLeft>0){
             int rowIndex = (int) (Math.random()*rows);
             int columnIndex = (int) (Math.random()*column);
-            if(!(cells[rowIndex][columnIndex] instanceof MineCell)){
+            if(!(cells[rowIndex][columnIndex] instanceof MineCell || (rowIndex==rowPulsated && columnIndex==columnPulsated))){
                 cells[rowIndex][columnIndex] = new MineCell();
                 minesLeft--;
             }
         }
     }
-
+    
     private void fill() {
         for (int i = 0; i < cells.length; i++) {
             for (int j = 0; j < cells[i].length; j++) {

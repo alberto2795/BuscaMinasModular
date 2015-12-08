@@ -4,12 +4,12 @@ import java.awt.Graphics;
 import java.awt.Image;
 import javax.swing.JPanel;
 
-public class MinePanel extends JPanel {
+public class CellPanel extends JPanel {
 
     private final Image[] images;
     private int numberOfImg;
     
-    public MinePanel(Image[] img) {
+    public CellPanel(Image[] img) {
         this.images = img;
         numberOfImg = 10;
     }
