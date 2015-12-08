@@ -23,7 +23,8 @@ import model.UnpulsatedCell;
 import view.CellSet;
 import view.GameBoardDisplay;
 
-public class SwingGameBoardDisplay extends JFrame implements GameBoardDisplay{
+public class SwingGameBoardDisplay extends JFrame implements GameBoardDisplay {
+
     private CellSet set;
     private boolean firtClick = true;
     private CellPanel[][] panels;
@@ -45,127 +46,8 @@ public class SwingGameBoardDisplay extends JFrame implements GameBoardDisplay{
     }
 
     @Override
-    public void execute() {
-        this.setVisible(true);
-    }
-
-    @Override
-    public void press(int row, int column) {
-        Cell cell = set.getCell(row, column);
-        if(cell != null){
-            panels[row][column].paintOf(cell.getClosedMines());
-            if(cell instanceof MineCell) lose();
-        }
-    }
-
-    @Override
-    public void flag(int row, int column) {
-        Cell cell = set.getCell(row, column);
-        if(cell instanceof FlagCell){
-            panels[row][column].paintOf(11);
-            if(cell.getClosedMines()==-1){
-                correctMines++;
-                if(correctMines == mines) win();
-            }
-        }
-        if(cell instanceof UnpulsatedCell || cell instanceof MineCell) {
-            panels[row][column].paintOf(10);
-            if (cell.getClosedMines()==-1) correctMines--;
-        }
-    }
-    
-    private void lose() {
-        int answer = JOptionPane.showConfirmDialog(this,"Has perdido\n ¿Otra?", "Perdiste", JOptionPane.YES_NO_OPTION);
-        if(answer==0){
-            this.dispose();
-            new Application();
-        }
-    }
-
-    private void deployCommands() {
-        commands.put("press", new PressCellCommand(this));
-        commands.put("flag", new PutAFlagCommand(this));
-        commands.put("firstClick", new firstClickCommand(this));
-        
-    }
-    
-    private void deployUI() {
-        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        this.add(gameBoard(), BorderLayout.CENTER);
-        this.setColocation();
-    }
-
-    private JPanel gameBoard() {
-        JPanel panel = new JPanel(new GridLayout(rows, columns));
-        fillPanel(panel);
-        return panel;
-    }
-
-    private void fillPanel(JPanel panel) {
-        Image[] images = loadImages();
-        panels = new CellPanel[rows][columns];
-        
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < columns; j++) {
-                CellPanel temporalPanel = new CellPanel(images);
-                temporalPanel.addMouseListener(mouseListener(i,j));
-                panel.add(temporalPanel);
-                panels[i][j]=temporalPanel;
-            }
-        }
-    }
-
-    private Image[] loadImages() {
-        Image[] images = new Image[13];
-        for (int i = 0; i < images.length; i++) {
-            String path = "src\\img\\j" + i + ".gif";
-            images[i] = new ImageIcon(path).getImage();
-        }
-        return images;
-    }
-
-    private void setColocation() {
-        this.setSize(new Dimension(columns*33, rows*36));
-        this.setResizable(false);
-        this.setLocationRelativeTo(null);
-    }
-
-    private MouseListener mouseListener(int row, int column) {
-        return new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                int buttonPressed = e.getButton();
-                if(!firtClick){
-                    if(buttonPressed==MouseEvent.BUTTON1){
-                        commands.get("press").exectute(row, column);
-                    }else if(buttonPressed==MouseEvent.BUTTON3){
-                        commands.get("flag").exectute(row, column);
-                    }
-                }else {
-                    if(buttonPressed==MouseEvent.BUTTON1){
-                        commands.get("firstClick").exectute(row, column);
-                        firtClick = false;
-                        commands.get("press").exectute(row, column);
-                    }
-                }
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-            }
-        };
+    public void setCellSet(CellSet cellSet) {
+        this.set = cellSet;
     }
 
     @Override
@@ -182,17 +64,139 @@ public class SwingGameBoardDisplay extends JFrame implements GameBoardDisplay{
     public int getMines() {
         return mines;
     }
-    
+
     @Override
-    public void setCellSet(CellSet cellSet) {
-        this.set = cellSet;
+    public void execute() {
+        this.setVisible(true);
+    }
+
+    @Override
+    public void press(int row, int column) {
+        Cell cell = set.getCell(row, column);
+        if (cell != null) {
+            panels[row][column].paintOf(cell.getClosedMines());
+            if (cell instanceof MineCell) {
+                lose();
+            }
+        }
+    }
+
+    @Override
+    public void flag(int row, int column) {
+        Cell cell = set.getCell(row, column);
+        if (cell instanceof FlagCell) {
+            panels[row][column].paintOf(11);
+            if (cell.getClosedMines() == -1) {
+                correctMines++;
+                if (correctMines == mines) {
+                    win();
+                }
+            }
+        }
+        if (cell instanceof UnpulsatedCell || cell instanceof MineCell) {
+            panels[row][column].paintOf(10);
+            if (cell.getClosedMines() == -1) {
+                correctMines--;
+            }
+        }
+    }
+
+    private void deployCommands() {
+        commands.put("press", new PressCellCommand(this));
+        commands.put("flag", new PutAFlagCommand(this));
+        commands.put("firstClick", new firstClickCommand(this));
+    }
+
+    private void deployUI() {
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        this.add(gameBoard(), BorderLayout.CENTER);
+        this.setColocation();
+    }
+
+    private JPanel gameBoard() {
+        JPanel panel = new JPanel(new GridLayout(rows, columns));
+        fillPanel(panel);
+        return panel;
+    }
+
+    private void setColocation() {
+        this.setSize(new Dimension(columns * 33, rows * 36));
+        this.setResizable(false);
+        this.setLocationRelativeTo(null);
+    }
+
+    private void fillPanel(JPanel panel) {
+        Image[] images = loadImages();
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                CellPanel temporalPanel = new CellPanel(images);
+                temporalPanel.addMouseListener(mouseListener(i, j));
+                panel.add(temporalPanel);
+                panels[i][j] = temporalPanel;
+            }
+        }
+    }
+
+    private Image[] loadImages() {
+        Image[] images = new Image[13];
+        for (int i = 0; i < images.length; i++) {
+            String path = "src\\img\\j" + i + ".gif";
+            images[i] = new ImageIcon(path).getImage();
+        }
+        return images;
     }
 
     private void win() {
-        int answer = JOptionPane.showConfirmDialog(this,"¡GANASTE!\n ¿Otra?", "Ganaste", JOptionPane.YES_NO_OPTION);
-        if(answer==0){
+        int answer = JOptionPane.showConfirmDialog(this, "¡GANASTE!\n ¿Otra?", "Ganaste", JOptionPane.YES_NO_OPTION);
+        if (answer == 0) {
             this.dispose();
             new Application();
         }
     }
-}   
+
+    private void lose() {
+        int answer = JOptionPane.showConfirmDialog(this, "Has perdido\n ¿Otra?", "Perdiste", JOptionPane.YES_NO_OPTION);
+        if (answer == 0) {
+            this.dispose();
+            new Application();
+        }
+    }
+
+    private MouseListener mouseListener(int row, int column) {
+        return new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                int buttonPressed = e.getButton();
+                if (!firtClick) {
+                    if (buttonPressed == MouseEvent.BUTTON1) {
+                        commands.get("press").exectute(row, column);
+                    } else if (buttonPressed == MouseEvent.BUTTON3) {
+                        commands.get("flag").exectute(row, column);
+                    }
+                } else {
+                    if (buttonPressed == MouseEvent.BUTTON1) {
+                        commands.get("firstClick").exectute(row, column);
+                        firtClick = false;
+                        commands.get("press").exectute(row, column);
+                    }
+                }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+        };
+    }
+}

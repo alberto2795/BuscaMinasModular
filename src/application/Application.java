@@ -13,25 +13,39 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-class Application extends JFrame{
-    private Map<String, JTextField> fields = new HashMap<>();
-    
+class Application extends JFrame {
+
+    private final Map<String, JTextField> fields = new HashMap<>();
+
     public static void main(String[] args) {
         new Application();
     }
-    
+
     public Application() {
         deployUI();
         this.setVisible(true);
     }
 
     private void deployUI() {
+        this.getContentPane().add(panelWithQuestions(), BorderLayout.CENTER);
+        this.add(startButton(), BorderLayout.SOUTH);
+        setColocation();
+    }
+
+    private JPanel panelWithQuestions() {
+        JPanel jPanel = new JPanel();
+        jPanel.add(panelWithTagAndField("filas"));
+        jPanel.add(panelWithTagAndField("columnas"));
+        jPanel.add(panelWithTagAndField("minas"));
+        jPanel.add(new JLabel("El numero de minas ha de ser menor que el de casillas"));
+        return jPanel;
+    }
+
+    private void setColocation() {
         this.setTitle("BuscaMinas");
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setSize(340, 200);
         this.setResizable(false);
-        this.getContentPane().add(panelWithQuestions(), BorderLayout.CENTER);
-        this.add(startButton(), BorderLayout.SOUTH);
         this.setLocationRelativeTo(null);
     }
 
@@ -61,52 +75,42 @@ class Application extends JFrame{
                 int row = toNumber("filas");
                 int column = toNumber("columnas");
                 int mine = toNumber("minas");
-                if(checkAreValid(row, column, mine)) {
-                    new SwingGameBoardDisplay(row,column,mine).execute();
+                if (checkAreValid(row, column, mine)) {
+                    new SwingGameBoardDisplay(row, column, mine).execute();
                     Application.this.setVisible(false);
                 }
             }
 
             private int toNumber(String field) {
                 String text = fields.get(field).getText().trim();
-                try{
+                try {
                     return Integer.parseInt(text);
-                }catch(NumberFormatException e){
+                } catch (NumberFormatException e) {
                     return -1;
                 }
             }
 
             private boolean checkAreValid(int row, int column, int mine) {
-                if(row<1) {
+                if (row < 1) {
                     showErrorMessage("filas");
                     return false;
                 }
-                if(column<1) {
+                if (column < 1) {
                     showErrorMessage("columnas");
                     return false;
                 }
-                if(mine>=(row*column)) {
+                if (mine >= (row * column)) {
                     showErrorMessage("minas");
                     return false;
                 }
                 return true;
             }
-            
+
             private void showErrorMessage(String field) {
-                    JOptionPane.showMessageDialog(Application.this, "El campo de " 
-                            + field + " tiene un valor incorrecto", "Valor invalido", 
-                            JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(Application.this, "El campo de "
+                        + field + " tiene un valor incorrecto", "Valor invalido",
+                        JOptionPane.ERROR_MESSAGE);
             }
         };
     }
-
-    private JPanel panelWithQuestions() {
-        JPanel jPanel = new JPanel();
-        jPanel.add(panelWithTagAndField("filas"));
-        jPanel.add(panelWithTagAndField("columnas"));
-        jPanel.add(panelWithTagAndField("minas"));
-        jPanel.add(new JLabel("El numero de minas ha de ser menor que el de casillas"), BorderLayout.SOUTH);
-        return jPanel;
-    }
-    
 }
