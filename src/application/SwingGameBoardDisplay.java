@@ -8,12 +8,17 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import model.Cell;
@@ -109,18 +114,21 @@ public class SwingGameBoardDisplay extends JFrame implements GameBoardDisplay {
 
     private void deployUI() {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        this.add(menuBar(), BorderLayout.NORTH);
         this.add(gameBoard(), BorderLayout.CENTER);
         this.setColocation();
     }
 
     private JPanel gameBoard() {
-        JPanel panel = new JPanel(new GridLayout(rows, columns));
+        JPanel panel = new JPanel(new GridLayout(rows, columns, 0, 0));
+        panel.setPreferredSize(new Dimension(30*columns, 30*rows));
+        panels = new CellPanel[rows][columns];
         fillPanel(panel);
         return panel;
     }
 
     private void setColocation() {
-        this.setSize(new Dimension(columns * 33, rows * 36));
+        this.pack();
         this.setResizable(false);
         this.setLocationRelativeTo(null);
     }
@@ -138,7 +146,7 @@ public class SwingGameBoardDisplay extends JFrame implements GameBoardDisplay {
     }
 
     private Image[] loadImages() {
-        Image[] images = new Image[13];
+        Image[] images = new Image[12];
         for (int i = 0; i < images.length; i++) {
             String path = "src\\img\\j" + i + ".gif";
             images[i] = new ImageIcon(path).getImage();
@@ -148,18 +156,21 @@ public class SwingGameBoardDisplay extends JFrame implements GameBoardDisplay {
 
     private void win() {
         int answer = JOptionPane.showConfirmDialog(this, "¡GANASTE!\n ¿Otra?", "Ganaste", JOptionPane.YES_NO_OPTION);
-        if (answer == 0) {
-            this.dispose();
-            new Application();
+        if (answer == JOptionPane.YES_OPTION) {
+            startNewGame();
         }
     }
 
     private void lose() {
         int answer = JOptionPane.showConfirmDialog(this, "Has perdido\n ¿Otra?", "Perdiste", JOptionPane.YES_NO_OPTION);
-        if (answer == 0) {
-            this.dispose();
-            new Application();
+        if (answer == JOptionPane.YES_OPTION) {
+            startNewGame();
         }
+    }
+    
+    private void startNewGame() {
+        this.dispose();
+        new Application();
     }
 
     private MouseListener mouseListener(int row, int column) {
@@ -199,4 +210,68 @@ public class SwingGameBoardDisplay extends JFrame implements GameBoardDisplay {
             }
         };
     }
+
+    private JMenuBar menuBar() {
+        JMenuBar menuBar = new JMenuBar();
+        menuBar.add(fileMenu());
+        menuBar.add(aboutMenu());
+        return menuBar;
+    }
+
+    private JMenu fileMenu() {
+        JMenu fileMenu = new JMenu("Archivo");
+        fileMenu.add(newGameMenuItem());
+        fileMenu.add(closeMenuItem());
+        return fileMenu;
+    }
+
+    private JMenuItem aboutMenu() {
+        JMenuItem aboutMenu = new JMenuItem ("About");
+        aboutMenu.addActionListener(aboutMenuListener());
+        return aboutMenu;
+    }
+
+    private JMenuItem newGameMenuItem() {
+        JMenuItem newGameItem = new JMenuItem("Nuevo juego");
+        newGameItem.addActionListener(newGameListener());
+        return newGameItem;
+    }
+
+    private JMenuItem closeMenuItem() {
+        JMenuItem closeItem = new JMenuItem("Cerrar");
+        closeItem.addActionListener(closeItemListener());
+        return closeItem;
+    }
+
+    private ActionListener newGameListener() {
+        return new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                startNewGame();
+            }
+        };
+    }
+
+    private ActionListener closeItemListener() {
+        return new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        };
+    }
+
+    private ActionListener aboutMenuListener() {
+        return new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new AboutWindow();
+            }
+        };
+    }
+
+    
 }

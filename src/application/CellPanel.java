@@ -22,7 +22,6 @@ public class CellPanel extends JPanel {
     
     @Override
     public void paintComponent(Graphics g) {
-        g.clearRect(0, 0, 30, 30);
         g.drawImage(images[numberOfImg], 0, 0, null);
     }
 }
